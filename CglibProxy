@@ -1,0 +1,47 @@
+package dynamic.cglib.proxy;
+
+import java.lang.reflect.Method;
+
+import dynamic.proxy.dao.NewsImpl;
+import dynamic.proxy.dao.NewsInterface;
+
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
+import net.sf.cglib.proxy.MethodProxy;
+
+public class CglibProxy implements MethodInterceptor {
+
+	public static void main(String[] args) {
+
+		CglibProxy cglibProxy = new CglibProxy();
+
+		Enhancer enhancer = new Enhancer();//用于生成代理对象
+		
+		enhancer.setSuperclass(NewsImpl.class);//设置代理父类  
+        
+		enhancer.setCallback(cglibProxy);//设置回调
+		
+		NewsInterface dao = (NewsInterface) enhancer.create();//创建代理对象
+		
+		dao.select();
+	}
+
+	@Override
+	// 代理对象，拦截方法，方法参数，代理方法
+	public Object intercept(Object obj, Method method, Object[] args,
+			MethodProxy methodProxy) throws Throwable {
+		Object object = null;
+
+		try {
+			System.out.println("\n=====>> begin");
+			object = methodProxy.invokeSuper(obj, args);
+			System.out.println("=====>> commit\n");
+		} catch (Exception e) {
+			System.out.println("=====>> rollback\n");
+			e.printStackTrace();
+		}
+
+		return object;
+	}
+
+}
